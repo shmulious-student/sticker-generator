@@ -60,3 +60,21 @@ fastlane/report.xml
 fastlane/Preview.html
 fastlane/screenshots/**/*.png
 fastlane/test_output
+
+# Node / React Native
+node_modules/
+npm-debug.log
+yarn-error.log
+*.log
+.metro-health-check*
+.jest/
+coverage/
+
+# Generated native projects (regenerated locally via the RN CLI)
+/android/
+/ios/
+
+# Env / local
+.env
+.env.local
+.DS_Store
