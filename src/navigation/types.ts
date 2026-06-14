@@ -2,7 +2,7 @@
 export type RootStackParamList = {
   Home: undefined;
   SelectPhotos: undefined;
-  Generating: {packId: string; sourceUris: string[]};
+  Generating: {packId: string; sourceUris: string[]; prompt?: string};
   Review: {packId: string};
   PackDetail: {packId: string};
   Settings: undefined;

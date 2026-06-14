@@ -1,21 +1,32 @@
-import React, {useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import {
   FlatList,
   Image,
   Pressable,
   StyleSheet,
   Text,
+  TextInput,
   View,
 } from 'react-native';
 import {launchImageLibrary} from 'react-native-image-picker';
 import type {NativeStackScreenProps} from '@react-navigation/native-stack';
 
 import type {RootStackParamList} from '../navigation/types';
+import {getSettings} from '../storage/settings';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'SelectPhotos'>;
 
 export default function SelectPhotosScreen({navigation}: Props) {
   const [uris, setUris] = useState<string[]>([]);
+  const [aiEnabled, setAiEnabled] = useState(false);
+  const [prompt, setPrompt] = useState('');
+
+  useEffect(() => {
+    getSettings().then(s => {
+      setAiEnabled(s.ai.enabled);
+      setPrompt(s.ai.prompt);
+    });
+  }, []);
 
   const pick = async () => {
     const res = await launchImageLibrary({
@@ -33,7 +44,11 @@ export default function SelectPhotosScreen({navigation}: Props) {
 
   const start = () => {
     const packId = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
-    navigation.replace('Generating', {packId, sourceUris: uris});
+    navigation.replace('Generating', {
+      packId,
+      sourceUris: uris,
+      prompt: aiEnabled ? prompt : undefined,
+    });
   };
 
   return (
@@ -43,6 +58,19 @@ export default function SelectPhotosScreen({navigation}: Props) {
           {uris.length ? 'Add more photos' : 'Pick portrait photos'}
         </Text>
       </Pressable>
+
+      {aiEnabled && (
+        <View style={styles.promptBox}>
+          <Text style={styles.promptLabel}>Sticker style prompt</Text>
+          <TextInput
+            style={styles.promptInput}
+            placeholder="e.g. cartoon astronaut, vibrant colors"
+            value={prompt}
+            onChangeText={setPrompt}
+            multiline
+          />
+        </View>
+      )}
 
       <FlatList
         data={uris}
@@ -83,6 +111,16 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   pickText: {color: '#1f6feb', fontWeight: '600'},
+  promptBox: {marginBottom: 12},
+  promptLabel: {fontWeight: '600', marginBottom: 6, color: '#333'},
+  promptInput: {
+    borderWidth: 1,
+    borderColor: '#ddd',
+    borderRadius: 10,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    minHeight: 44,
+  },
   grid: {gap: 4},
   thumb: {flex: 1 / 3, aspectRatio: 1, margin: 2, borderRadius: 6, backgroundColor: '#eee'},
   hint: {textAlign: 'center', color: '#666', marginTop: 32, paddingHorizontal: 24},

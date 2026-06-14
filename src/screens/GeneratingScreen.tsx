@@ -6,11 +6,12 @@ import type {RootStackParamList} from '../navigation/types';
 import {runPipeline} from '../pipeline/stickerPipeline';
 import {savePack} from '../storage/packStore';
 import {getSettings} from '../storage/settings';
+import {createAIGenerator} from '../ai';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Generating'>;
 
 export default function GeneratingScreen({navigation, route}: Props) {
-  const {packId, sourceUris} = route.params;
+  const {packId, sourceUris, prompt} = route.params;
   const [label, setLabel] = useState('Starting…');
   const [fraction, setFraction] = useState(0);
   const [error, setError] = useState<string | null>(null);
@@ -19,9 +20,14 @@ export default function GeneratingScreen({navigation, route}: Props) {
     let cancelled = false;
     (async () => {
       try {
+        const settings = await getSettings();
+        // Use the AI generator when enabled; otherwise the on-device cutout.
+        const generator = createAIGenerator(settings.ai, prompt) ?? undefined;
+
         const {stickers, trayImageFileUri} = await runPipeline({
           packId,
           sourceUris,
+          generator,
           onProgress: p => {
             if (!cancelled) {
               setLabel(p.label);
@@ -39,7 +45,6 @@ export default function GeneratingScreen({navigation, route}: Props) {
           return;
         }
 
-        const settings = await getSettings();
         await savePack({
           identifier: packId,
           name: '',
@@ -60,7 +65,7 @@ export default function GeneratingScreen({navigation, route}: Props) {
     return () => {
       cancelled = true;
     };
-  }, [navigation, packId, sourceUris]);
+  }, [navigation, packId, sourceUris, prompt]);
 
   if (error) {
     return (

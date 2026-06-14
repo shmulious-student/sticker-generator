@@ -70,11 +70,18 @@ yarn-error.log
 .jest/
 coverage/
 
-# Generated native projects (regenerated locally via the RN CLI)
+# Generated native projects (regenerated locally via the RN CLI).
+# Keep the hand-written WebPEncoder native module and the Podfile under version
+# control; everything else under ios/ (Xcode project, Pods, build) is generated.
 /android/
-/ios/
+/ios/*
+!/ios/Podfile
+!/ios/WebPEncoder/
 
 # Env / local
 .env
 .env.local
 .DS_Store
+
+# Secrets — never commit real API keys (template is Config/Secrets.example.xcconfig)
+Config/Secrets.xcconfig

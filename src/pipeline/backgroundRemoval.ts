@@ -22,7 +22,11 @@ import {removeBackground as nativeRemoveBackground} from '@six33/react-native-bg
  */
 export async function removeBackground(inputUri: string): Promise<string | null> {
   try {
-    const result = await nativeRemoveBackground(inputUri);
+    // The native lib loads via URL(string:)+CIImage(contentsOf:), which needs a
+    // proper file:// URL. Our pipeline passes bare filesystem paths, so prefix
+    // them (leave already-schemed uris like file:// or ph:// untouched).
+    const fileUri = inputUri.includes('://') ? inputUri : `file://${inputUri}`;
+    const result = await nativeRemoveBackground(fileUri);
     return result ?? null;
   } catch (err) {
     if (__DEV__) {
